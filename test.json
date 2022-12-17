@@ -1,0 +1,180 @@
+{
+  "goldMineData": {
+    "size": 3,
+    "upgradeCosts": [
+      {
+        "elixir": 500,
+        "gold": 0
+      },
+      {
+        "elixir": 1000,
+        "gold": 0
+      },
+      {
+        "elixir": 5000,
+        "gold": 0
+      },
+      {
+        "elixir": 25000,
+        "gold": 0
+      },
+      {
+        "elixir": 100000,
+        "gold": 0
+      }
+    ],
+    "productionLevels": [
+      {
+        "total": 500,
+        "productionPerSeconde": 1
+      },
+      {
+        "total": 1000,
+        "productionPerSeconde": 2
+      },
+      {
+        "total": 5000,
+        "productionPerSeconde": 5
+      },
+      {
+        "total": 25000,
+        "productionPerSeconde": 10
+      },
+      {
+        "total": 100000,
+        "productionPerSeconde": 100
+      }
+    ]
+  },
+  "elixirCollectorData": {
+    "size": 3,
+    "upgradeCosts": [
+      {
+        "elixir": 0,
+        "gold": 500
+      },
+      {
+        "elixir": 0,
+        "gold": 1000
+      },
+      {
+        "elixir": 0,
+        "gold": 5000
+      },
+      {
+        "elixir": 0,
+        "gold": 25000
+      },
+      {
+        "elixir": 0,
+        "gold": 100000
+      }
+    ],
+    "productionLevels": [
+      {
+        "total": 500,
+        "productionPerSeconde": 1
+      },
+      {
+        "total": 1000,
+        "productionPerSeconde": 2
+      },
+      {
+        "total": 5000,
+        "productionPerSeconde": 5
+      },
+      {
+        "total": 25000,
+        "productionPerSeconde": 10
+      },
+      {
+        "total": 100000,
+        "productionPerSeconde": 100
+      }
+    ]
+  },
+  "goldStorageData": {
+    "size": 3,
+    "upgradeCosts": [
+      {
+        "elixir": 500,
+        "gold": 0
+      },
+      {
+        "elixir": 1000,
+        "gold": 0
+      },
+      {
+        "elixir": 5000,
+        "gold": 0
+      },
+      {
+        "elixir": 25000,
+        "gold": 0
+      },
+      {
+        "elixir": 100000,
+        "gold": 0
+      }
+    ],
+    "storageData": [
+      {
+        "count": 10000
+      },
+      {
+        "count": 100000
+      },
+      {
+        "count": 1000000
+      },
+      {
+        "count": 1000000
+      },
+      {
+        "count": 10000000
+      }
+    ]
+  },
+  "elixirTankData": {
+    "size": 3,
+    "upgradeCosts": [
+      {
+        "elixir": 500,
+        "gold": 0
+      },
+      {
+        "elixir": 1000,
+        "gold": 0
+      },
+      {
+        "elixir": 5000,
+        "gold": 0
+      },
+      {
+        "elixir": 25000,
+        "gold": 0
+      },
+      {
+        "elixir": 100000,
+        "gold": 0
+      }
+    ],
+    "storageData": [
+      {
+        "count": 10000
+      },
+      {
+        "count": 100000
+      },
+      {
+        "count": 1000000
+      },
+      {
+        "count": 1000000
+      },
+      {
+        "count": 10000000
+      }
+    ]
+  }
+}

@@ -1,0 +1,4 @@
+name: COCPlugin
+version: 1.0.0
+main: nl.levy.COCPlugin.MainPlugin
+api-version: 1.13
