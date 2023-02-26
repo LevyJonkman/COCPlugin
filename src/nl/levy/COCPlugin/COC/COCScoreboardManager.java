@@ -5,6 +5,7 @@ import nl.levy.COCPlugin.COCItems.COCObjective;
 import nl.levy.COCPlugin.COCItems.ResourceType;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Zombie;
 import org.bukkit.scoreboard.*;
 
 import java.util.ArrayList;
@@ -47,6 +48,17 @@ public class COCScoreboardManager {
 
         player.setScoreboard(board);
     }
+//
+//    public void belowName(Zombie zombie) {
+//        var board = scoreboardManager.getNewScoreboard();
+//
+//        var obj = board.registerNewObjective("bla", "bla", "bla");
+//        obj.setDisplaySlot(DisplaySlot.BELOW_NAME);
+//        var a = new Object();
+//
+//        obj.getScore(zombie.hashCode() + "").setScore("");
+//
+//    }
 
     public void update() {
         for (var item : items) {

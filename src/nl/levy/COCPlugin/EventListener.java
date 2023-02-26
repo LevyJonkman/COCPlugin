@@ -1,6 +1,7 @@
 package nl.levy.COCPlugin;
 
 import nl.levy.COCPlugin.COC.BuildHelper;
+import nl.levy.COCPlugin.COC.COCAttack;
 import nl.levy.COCPlugin.COCBuildings.ArcherTower;
 import nl.levy.COCPlugin.COCBuildings.COCItem;
 import nl.levy.COCPlugin.COCEntity.Entity;
@@ -10,6 +11,7 @@ import nl.levy.COCPlugin.ItemBuilder.ArcherTowerData;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
@@ -38,6 +40,22 @@ public class EventListener implements Listener {
 
     public EventListener(COCMainManager manager) {
         this.manager = manager;
+
+//
+//        Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(MainPlugin.plugin, () -> {
+//
+//            for (Entity zombie : zombies) {
+//                zombie.update();
+//            }
+//        }, 1, 1);
+//
+//        Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(MainPlugin.plugin, () -> {
+//
+//            for (Entity zombie : zombies) {
+//             //   getTower().defenseUpdate(zombie);
+//            }
+//
+//        }, 1, 20);
     }
 
     private final List<BlockChange> change = new ArrayList<>();
@@ -74,21 +92,64 @@ public class EventListener implements Listener {
             }
         }
     }
-
     @EventHandler
-    public void tower(PlayerChatEvent e) {
-        var list = new ArrayList<ArcherTowerDamage>();
-        list.add(new ArcherTowerDamage(1, 1));
-        if (e.getMessage().equalsIgnoreCase("tower")) {
-        } else if (e.getMessage().startsWith("zombie")){
-            var t = new Entity(e.getPlayer().getLocation());
-            var tower = new ArcherTower(1, 1, new ArcherTowerData(3, new ArrayList<>(), 10, list));
-
-            Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(MainPlugin.plugin, () -> {
-                t.update();
-                tower.defenseUpdate(t);
-            }, 1, 1);
+    public void data(PlayerChatEvent e) {
+        if (e.getMessage().equalsIgnoreCase("zombie")) {
+            getTower(e.getPlayer());
+            getAttack(e.getPlayer()).spawnZombie(e.getPlayer().getLocation());
         }
+    }
+
+//    @EventHandler
+//    public void tower(PlayerChatEvent e) {
+//        if (e.getMessage().equalsIgnoreCase("tower")) {
+//
+//        } else if (e.getMessage().startsWith("zombie")) {
+//            var t = new Entity(e.getPlayer().getLocation());
+//            t.setDestroy(() -> {
+//                zombies.remove(t);
+//            });
+////
+//            t.update();
+//
+//            zombies.add(t);
+////            tower.defenseUpdate(t);
+////
+////            Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(MainPlugin.plugin, () -> {
+////                t.update();
+////            }, 1, 1);
+//
+//        }else if (e.getMessage().startsWith("shoot")){
+//
+//            for (Entity zombie : zombies) {
+//                //getTower().defenseUpdate(zombie);
+//            }
+//        }
+//    }
+
+    private List<Entity> zombies = new ArrayList<>();
+    private ArcherTower tower;
+    private COCAttack attack;
+
+    private COCAttack getAttack(Player player) {
+        if (attack == null) {
+            attack = new COCAttack(manager, player, player);
+        }
+        return attack;
+    }
+
+    private ArcherTower getTower(Player player) {
+        if (tower == null) {
+
+            var list = new ArrayList<ArcherTowerDamage>();
+            list.add(new ArcherTowerDamage(1, 1));
+
+
+
+            tower = new ArcherTower(1, 1, new ArcherTowerData(3, new ArrayList<>(), 10, list), getAttack(player));
+            manager.getManager(player).COCItems.add(tower);
+        }
+        return tower;
     }
 
     @EventHandler

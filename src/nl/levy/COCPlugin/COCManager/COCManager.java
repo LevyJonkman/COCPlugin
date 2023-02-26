@@ -134,4 +134,14 @@ public class COCManager {
 
         return item;
     }
+
+    public void updateDefences() {
+        System.out.println(1);
+        for (COCItem cocItem : COCItems) {
+            System.out.println(cocItem);
+            if (cocItem instanceof COCDefenceItem item) {
+                item.defenseUpdate();
+            }
+        }
+    }
 }

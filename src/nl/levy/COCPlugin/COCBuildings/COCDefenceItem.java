@@ -10,6 +10,6 @@ public abstract class COCDefenceItem extends COCLevelItem{
         super(x, y, data);
     }
 
-    public abstract void defenseUpdate(World w, Player player);
+    public abstract void defenseUpdate();
 
 }

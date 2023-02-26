@@ -15,7 +15,7 @@ public class LevelItemBuilder {
 
     public static LevelItemBuilder create() {
         try {
-            String json = Files.readString(Path.of("C:\\Users\\Gebruiker\\Documents\\Server\\plugins\\data\\objectdata.json"));
+            String json = Files.readString(Path.of("C:\\Users\\l.jonkman\\prive\\repos\\COCServer\\objectdata.json"));
 
             return new Gson().fromJson(json, LevelItemBuilder.class);
 

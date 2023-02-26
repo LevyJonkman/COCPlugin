@@ -1,8 +1,10 @@
 package nl.levy.COCPlugin.COCBuildings;
 
 import com.sun.tools.javac.Main;
+import nl.levy.COCPlugin.COC.COCAttack;
 import nl.levy.COCPlugin.COCEntity.Entity;
 import nl.levy.COCPlugin.COCItems.ArcherTowerDamage;
+import nl.levy.COCPlugin.COCManager.COCManager;
 import nl.levy.COCPlugin.Inventories.COCInventory;
 import nl.levy.COCPlugin.ItemBuilder.ArcherTowerData;
 import nl.levy.COCPlugin.MainPlugin;
@@ -22,9 +24,11 @@ public class ArcherTower extends COCDefenceItem {
     private final ArrayList<ArcherTowerDamage> archerTowerData;
 
     private Date lastShot;
+    private COCAttack attack;
 
-    public ArcherTower(int x, int y, ArcherTowerData data) {
+    public ArcherTower(int x, int y, ArcherTowerData data, COCAttack attack) {
         super(x, y, data);
+        this.attack = attack;
         archerTowerData = data.damageValues;
         lastShot = new Date();
     }
@@ -43,38 +47,68 @@ public class ArcherTower extends COCDefenceItem {
         return 1;
     }
 
-    public void defenseUpdate(Entity zombie) {
+
+    @Override
+    public void defenseUpdate() {
         var data = getData();
         if (lastShot.getTime() + data.fireRate * 1000L < new Date().getTime()) {
+            Entity zombie = getNearest();
+            if (zombie == null) {
+                return;
+            }
 
-            var target = zombie.getLocation();
+            Location target = zombie.getLocation();
             var start = new Location(target.getWorld(), 3006, 110, 3006);
 
             System.out.println("Shoot");
-            var arrow = zombie.getLocation().getWorld().spawnArrow(start, new Vector(target.getBlockX() - start.getBlockX(), target.getBlockY() + 1 - start.getBlockY(), target.getBlockZ() - start.getBlockZ()), 1, 1);
+            Arrow arrow = zombie.getLocation().getWorld().spawnArrow(start, new Vector(target.getBlockX() - start.getBlockX(), target.getBlockY() + 1 - start.getBlockY(), target.getBlockZ() - start.getBlockZ()), 1, 1);
             arrow.setGlowing(true);
             arrow.setGravity(false);
 
-            var a = new ObjectRunner();
-            a.start(() -> {
-                var newstart = arrow.getLocation();
-                var vel = new Vector(target.getBlockX() - newstart.getBlockX(), target.getBlockY() + 1 - newstart.getBlockY(), target.getBlockZ() - newstart.getBlockZ()).normalize();
-
-                arrow.setVelocity(vel);
-                if (arrow.isInBlock() || arrow.getLocation().distance(target) < 1) {
-                    System.out.println("done");
-
-                    a.stop();
-                }
-            }, arrow::remove);
+            new ArrowRunner(arrow, zombie).start();
 
             lastShot = new Date();
         }
+
     }
 
-    @Override
-    public void defenseUpdate(World w, Player player) {
+    private Entity getNearest() {
+        var dist = Double.MAX_VALUE;
+        Entity near = null;
+        for (Entity entity : attack.entities) {
+            var curDist = entity.getLocation().distance(new Location(entity.getLocation().getWorld(), this.location.x * 3 + 3000, 100, this.location.z * 3 + 3000));
+            if (curDist < dist) {
+                dist = curDist;
+                near = entity;
+            }
+        }
 
+        return near;
+    }
+}
+
+class ArrowRunner extends ObjectRunner {
+    private Arrow arrow;
+    private Entity target;
+
+    public ArrowRunner(Arrow arrow, Entity target) {
+        this.arrow = arrow;
+        this.target = target;
+    }
+
+    public void start() {
+        super.start(() -> {
+            var newstart = arrow.getLocation();
+            var vel = new Vector(target.getLocation().getBlockX() - newstart.getBlockX(), target.getLocation().getBlockY() + 1 - newstart.getBlockY(), target.getLocation().getBlockZ() - newstart.getBlockZ()).normalize();
+
+            arrow.setVelocity(vel);
+            if (arrow.isInBlock() || arrow.getLocation().distance(target.getLocation()) < 2.5) {
+                System.out.println("done");
+
+                target.dealDamage(1);
+                stop();
+            }
+        }, arrow::remove);
     }
 }
 
@@ -90,10 +124,10 @@ class ObjectRunner {
             } else {
                 o.run();
             }
-        }, 0, 20);
+        }, 0, 1);
     }
 
-    Runnable onStop;
+    protected Runnable onStop;
 
     public void start(Runnable o, Runnable onStop) {
         this.onStop = onStop;
