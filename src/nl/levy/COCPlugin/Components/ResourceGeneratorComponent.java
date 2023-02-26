@@ -9,11 +9,10 @@ import java.util.Date;
 
 public class ResourceGeneratorComponent implements IComponent {
 
-    public ResourceProductionLevel currentProductionLevel;
-
+    private ResourceProductionLevel currentProductionLevel;
     public Date lastCleaned;
     public final ResourceType resourceType;
-    private int storedResources;
+    public int storedResources;
 
     public ResourceGeneratorComponent(ResourceProductionLevel currentProductionLevel, ResourceType resourceType) {
         this.currentProductionLevel = currentProductionLevel;
@@ -39,5 +38,16 @@ public class ResourceGeneratorComponent implements IComponent {
         };
 
         manager.addResource(col);
+    }
+
+    public void upgradeLevel(ResourceProductionLevel resourceProductionLevel) {
+        storedResources = getProduction();
+        lastCleaned = new Date();
+
+        currentProductionLevel = resourceProductionLevel;
+    }
+
+    public ResourceProductionLevel getCurrentProductionLevel() {
+        return currentProductionLevel;
     }
 }

@@ -1,62 +1,99 @@
 package nl.levy.COCPlugin.COCManager;
 
-import nl.levy.COCPlugin.COCBuildings.COCResourceStorage;
+import nl.levy.COCPlugin.COCBuildings.COCLevelItem;
+import nl.levy.COCPlugin.COCItems.COCMainManager;
+import nl.levy.COCPlugin.COCItems.ResourceType;
+import nl.levy.COCPlugin.Components.ResourceStorageComponent;
 
-public class ResourceManger<T extends COCResourceStorage> {
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
-    public final Class<T> Class;
+import static nl.levy.COCPlugin.COC.FinderHelper.getItemsComponents;
+
+public class ResourceManger {
+
     private final COCManager manager;
-    private int current;
+    public final HashMap<ResourceType, Integer> currentValues;
 
-    ResourceManger(java.lang.Class<T> aClass, COCManager manager) {
-        Class = aClass;
+    ResourceManger(COCManager manager, COCMainManager.SaveManager data) {
         this.manager = manager;
+        currentValues = new HashMap<>();
+        currentValues.put(ResourceType.Gold, data.Gold);
+        currentValues.put(ResourceType.Elixir, data.Elixir);
+        currentValues.put(ResourceType.DarkElixir, data.DarkElixir);
+    }
+    ResourceManger(COCManager manager) {
+        this.manager = manager;
+        currentValues = new HashMap<>();
+        currentValues.put(ResourceType.Gold, 0);
+        currentValues.put(ResourceType.Elixir, 0);
+        currentValues.put(ResourceType.DarkElixir, 0);
     }
 
+    public int getCurrent(ResourceType type) {
+        return currentValues.get(type);
+    }
 
-    int total() {
+    private List<ResourceStorageComponent> getItems(ResourceType type) {
+        List<ResourceStorageComponent> items = getItemsComponents(manager.COCItems, COCLevelItem.class, ResourceStorageComponent.class);
+        List<ResourceStorageComponent> filterdItems = new ArrayList<>();
+        for (ResourceStorageComponent item : items) {
+            if (item.type == type) {
+                filterdItems.add(item);
+            }
+        }
+        return filterdItems;
+    }
+
+    public int total(ResourceType type) {
         int count = 0;
-        for (T item : manager.getItems(Class)) {
-            count += item.totalStorage();
+        var items = getItems(type);
+        for (var item : items) {
+            count += item.storageValue.count;
         }
 
         return count;
     }
 
-    void add(int amount) {
+    public void add(ResourceType type, int amount) {
+        var current = currentValues.get(type);
         current += amount;
-        var total = total();
+        var total = total(type);
         if (current > total) {
             current = total;
         }
+        currentValues.put(type, current);
     }
 
-    boolean has(int amount) {
-        return current >= amount;
+    public boolean has(ResourceType type,int amount) {
+        return currentValues.get(type) >= amount;
     }
 
-    void remove(int amount) {
+    public void remove(ResourceType type,int amount) {
+        var current = currentValues.get(type);
         current -= amount;
         if (current < 0) {
             current = 0;
         }
+        currentValues.put(type, current);
     }
 
 
-    public int getCurrent(COCResourceStorage item) {
-        var items = manager.getItems(Class);
+    public int getCurrent(ResourceStorageComponent item) {
+        var items = getItems(item.type);
 
-        var toDivide = current;
+        var toDivide = currentValues.get(item.type);
         var divided = toDivide / items.size();
 
         for (int i = 0; i <= items.size(); i++) {
             for (int i1 = 0; i1 < items.size(); i1++) {
                 var currentItem = items.get(i1);
-                if (currentItem.totalStorage() <= divided) {
+                if (currentItem.storageValue.count <= divided) {
                     if (currentItem == item) {
-                        return currentItem.totalStorage();
+                        return currentItem.storageValue.count;
                     }
-                    toDivide -= currentItem.totalStorage();
+                    toDivide -= currentItem.storageValue.count;
                     items.remove(currentItem);
                 }
             }

@@ -1,56 +1,47 @@
 package nl.levy.COCPlugin;
 
 import nl.levy.COCPlugin.COC.BuildHelper;
+import nl.levy.COCPlugin.COCBuildings.ArcherTower;
 import nl.levy.COCPlugin.COCBuildings.COCItem;
-import nl.levy.COCPlugin.COCManager.COCManager;
+import nl.levy.COCPlugin.COCEntity.Entity;
+import nl.levy.COCPlugin.COCItems.ArcherTowerDamage;
+import nl.levy.COCPlugin.COCItems.COCMainManager;
+import nl.levy.COCPlugin.ItemBuilder.ArcherTowerData;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.player.PlayerChangedMainHandEvent;
-import org.bukkit.event.player.PlayerChatEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.*;
+import org.bukkit.util.Vector;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.bukkit.Material.YELLOW_WOOL;
-
-class BlockChange {
-    public final Location location;
-    public final Material material;
-
-    BlockChange(Location location, Material material) {
-        this.location = location;
-        this.material = material;
-    }
+record BlockChange(Location location, Material material) {
 }
 
 public class EventListener implements Listener {
 
-    private final COCManager manager;
+    private final COCMainManager manager;
 
     public void disable() {
-        if (change != null) {
-            drawSection(change.location, change.material);
+        for (BlockChange blockChange : change) {
+            drawSection(blockChange.location(), blockChange.material());
         }
-        change = null;
+
+        change.clear();
     }
 
-
-    public EventListener(COCManager manager) {
+    public EventListener(COCMainManager manager) {
         this.manager = manager;
     }
 
-    private BlockChange change = null;
+    private final List<BlockChange> change = new ArrayList<>();
+    private int size = 0;
 
     private void drawSection(Location location, Material mat) {
         for (int i = 0; i < 3; i++) {
@@ -62,100 +53,139 @@ public class EventListener implements Listener {
 
     @EventHandler
     public void looking(PlayerMoveEvent event) {
-        if (change != null) {
-            drawSection(change.location, change.material);
-        }
+        disable();
 
-        change = null;
+        if (event.getPlayer().getLocation().getBlockX() < 500 && event.getPlayer().getLocation().getBlockZ() < 500)
+            return;
 
         var target = event.getPlayer().getTargetBlockExact(100);
         if (target != null && target.getLocation().getBlockY() == 100 && (target.getType() == Material.GREEN_CONCRETE || target.getType() == Material.LIME_CONCRETE)) {
             var loc = target.getLocation();
             var start = new Location(loc.getWorld(), (int) (loc.getBlockX() / 3.0) * 3, 100, (int) (loc.getBlockZ() / 3.0) * 3);
-            change = new BlockChange(start, start.getBlock().getType());
 
-            drawSection(start, Material.WHITE_WOOL);
+            for (int i = 0; i < size; i++) {
+                for (int j = 0; j < size; j++) {
+                    var location = start.clone().add(i * 3, 0, j * 3);
+                    change.add(new BlockChange(location, location.getBlock().getType()));
+                    var isOC = manager.getManager(event.getPlayer()).isOccupied(location.getBlockX() / 3, location.getBlockZ() / 3, 1);
+                    var mat = (isOC) ? Material.RED_WOOL : Material.WHITE_WOOL;
+                    drawSection(location, mat);
+                }
+            }
         }
     }
 
     @EventHandler
-    public void bar(PlayerChangedMainHandEvent event) {
-        var item = event.getPlayer().getInventory().getItemInMainHand();
-        System.out.println(item);
-        System.out.println(item.getType());
+    public void tower(PlayerChatEvent e) {
+        var list = new ArrayList<ArcherTowerDamage>();
+        list.add(new ArcherTowerDamage(1, 1));
+        if (e.getMessage().equalsIgnoreCase("tower")) {
+        } else if (e.getMessage().startsWith("zombie")){
+            var t = new Entity(e.getPlayer().getLocation());
+            var tower = new ArcherTower(1, 1, new ArcherTowerData(3, new ArrayList<>(), 10, list));
 
-        String name = null;
-        switch (item.getType()) {
-            case PURPLE_DYE -> name = "collector";
-            case YELLOW_DYE -> name = "goldmine";
-            case PURPLE_WOOL -> name = "elixirtank";
-            case YELLOW_WOOL -> name = "goldstrorage";
+            Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(MainPlugin.plugin, () -> {
+                t.update();
+                tower.defenseUpdate(t);
+            }, 1, 1);
         }
+    }
 
-        if (name!=null) {
-            Bukkit.dispatchCommand(Bukkit.getServer().getConsoleSender(),"title "+ event.getPlayer().getName() +" actionbar {\"text\":\""+name+"\", \"bold\":true, \"italic\":true, \"color\":\"red\"}");
-        }
+    @EventHandler
+    public void asdf2(PlayerItemHeldEvent event) {
+        var item = event.getPlayer().getInventory().getItem(event.getNewSlot());
 
+        if (item == null) return;
+
+        String name = switch (item.getType()) {
+            case PURPLE_DYE -> {
+                size = 3;
+                yield "collector";
+            }
+            case YELLOW_DYE -> {
+                size = 3;
+                yield "goldmine";
+            }
+            case PURPLE_WOOL -> {
+                size = 3;
+                yield "elixirtank";
+            }
+            case YELLOW_WOOL -> {
+                size = 3;
+                yield "goldstrorage";
+            }
+            case HAY_BLOCK -> {
+                size = 4;
+                yield "townhall";
+            }
+            default -> {
+                size = 0;
+                yield null;
+            }
+        };
+
+        if (name == null) return;
+
+        Bukkit.dispatchCommand(Bukkit.getServer().getConsoleSender(), "title " + event.getPlayer().getName() + " actionbar {\"text\":\"" + name + "\", \"bold\":true, \"italic\":true, \"color\":\"red\"}");
     }
 
     @EventHandler
     public void click(PlayerInteractEvent event) {
-        System.out.println(event.getAction());
-        System.out.println(event.getPlayer().getItemOnCursor());
-        System.out.println(event.getPlayer().getItemOnCursor().getType());
-        if (event.getAction() == Action.RIGHT_CLICK_AIR && change != null) {
+        if (event.getAction() == Action.RIGHT_CLICK_AIR && change.size() > 0) {
             var item = event.getPlayer().getInventory().getItemInMainHand();
+            var location = change.get(0).location();
+            //from real pos to coc position
+            var x = location.getBlockX() / 3;
+            var z = location.getBlockZ() / 3;
 
-            if (!manager.checkSpace(change.location.getBlockX(), change.location.getBlockZ(), 3)) {
+            if (manager.getManager(event.getPlayer()).isOccupied(x, z, 3)) {
                 event.getPlayer().sendMessage("Not enough space");
                 return;
             }
 
+            var world = location.getWorld();
+
             switch (item.getType()) {
                 case PURPLE_DYE ->
-                        manager.build(change.location.getWorld(), manager.createCollector(change.location.getBlockX() / 3, change.location.getBlockZ() / 3));
+                        manager.buildingManager.build(world, manager.getManager(event.getPlayer()).createCollector(x, z));
                 case YELLOW_DYE ->
-                        manager.build(change.location.getWorld(), manager.createGoldMine(change.location.getBlockX() / 3, change.location.getBlockZ() / 3));
+                        manager.buildingManager.build(world, manager.getManager(event.getPlayer()).createGoldMine(x, z));
                 case PURPLE_WOOL ->
-                        manager.build(change.location.getWorld(), manager.createElixirTank(change.location.getBlockX() / 3, change.location.getBlockZ() / 3));
+                        manager.buildingManager.build(world, manager.getManager(event.getPlayer()).createElixirTank(x, z));
                 case YELLOW_WOOL ->
-                        manager.build(change.location.getWorld(), manager.createGoldStorage(change.location.getBlockX() / 3, change.location.getBlockZ() / 3));
+                        manager.buildingManager.build(world, manager.getManager(event.getPlayer()).createGoldStorage(x, z));
+                case HAY_BLOCK ->
+                        manager.buildingManager.build(world, manager.getManager(event.getPlayer()).createTownHall(x, z));
             }
         }
     }
 
+    @SuppressWarnings("deprecation")
     @EventHandler
     public void chatEvent(PlayerChatEvent event) {
         try {
             String[] args = event.getMessage().split(" ");
             if (args[0].equalsIgnoreCase("coc")) {
                 var world = event.getPlayer().getWorld();
-                System.out.println(args[1]);
-                System.out.println("add");
                 if (args[1].equalsIgnoreCase("add")) {
 
-                    if (!manager.checkSpace(Integer.parseInt(args[3]), Integer.parseInt(args[4]), 3)) {
+                    if (manager.getManager(event.getPlayer()).isOccupied(Integer.parseInt(args[3]), Integer.parseInt(args[4]), 3)) {
                         event.getPlayer().sendMessage("Not enough space");
                         return;
                     }
 
                     switch (args[2]) {
                         case "collector" -> {
-                            manager.build(world, manager.createCollector(1000 + Integer.parseInt(args[3]), 1000 + Integer.parseInt(args[4])));
-                            System.out.println("ADD collector");
+                            manager.buildingManager.build(world, manager.getManager(event.getPlayer()).createCollector(1000 + Integer.parseInt(args[3]), 1000 + Integer.parseInt(args[4])));
                         }
                         case "goldmine" -> {
-                            manager.build(world, manager.createGoldMine(1000 + Integer.parseInt(args[3]), 1000 + Integer.parseInt(args[4])));
-                            System.out.println("ADD goldmine");
+                            manager.buildingManager.build(world, manager.getManager(event.getPlayer()).createGoldMine(1000 + Integer.parseInt(args[3]), 1000 + Integer.parseInt(args[4])));
                         }
                         case "goldstorage" -> {
-                            System.out.println("goldstorage");
-                            manager.build(world, manager.createGoldStorage(1000 + Integer.parseInt(args[3]), 1000 + Integer.parseInt(args[4])));
-                            System.out.println("ADD goldstorage");
+                            manager.buildingManager.build(world, manager.getManager(event.getPlayer()).createGoldStorage(1000 + Integer.parseInt(args[3]), 1000 + Integer.parseInt(args[4])));
                         }
                         case "elixirtank" -> {
-                            manager.build(world, manager.createElixirTank(1000 + Integer.parseInt(args[3]), 1000 + Integer.parseInt(args[4])));
-                            System.out.println("ADD elixirtank");
+                            manager.buildingManager.build(world, manager.getManager(event.getPlayer()).createElixirTank(1000 + Integer.parseInt(args[3]), 1000 + Integer.parseInt(args[4])));
                         }
                     }
                 } else if (args[1].equalsIgnoreCase("generatebase")) {
@@ -165,21 +195,28 @@ public class EventListener implements Listener {
                     BuildHelper.GenerateBase(event.getPlayer(), 1000 + Integer.parseInt(args[2]), 1000 + Integer.parseInt(args[3]),
                             1000 + Integer.parseInt(args[4]), 1000 + Integer.parseInt(args[5]));
                 } else if (args[1].equalsIgnoreCase("data")) {
-                    if (manager.COCItems.size() == 0) {
-                        manager.createCollector(1000, 1000);
+                    if (manager.getManager(event.getPlayer()).COCItems.size() == 0) {
+                        manager.buildingManager.build(world, manager.getManager(event.getPlayer()).createCollector(1000, 1000));
                     }
 
-                    var item = manager.getItem(event.getPlayer().getLocation().getBlockX(), event.getPlayer().getLocation().getBlockZ());
-                    System.out.println("tryopen");
+                    var item = manager.getManager(event.getPlayer()).getItem(event.getPlayer().getLocation().getBlockX(), event.getPlayer().getLocation().getBlockZ());
+
                     if (item != null) {
-                        System.out.println("open" + item);
-                        manager.OpenInventory(event.getPlayer(), item);
+                        manager.inventoryManager.OpenInventory(event.getPlayer(), item);
                     }
                 } else if (args[1].equalsIgnoreCase("render")) {
-                    for (COCItem cocItem : manager.COCItems) {
-                        System.out.println("render " + cocItem);
-                        manager.build(world, cocItem);
+                    for (int x = 0; x < 200; x++) {
+                        for (int z = 0; z < 200; z++) {
+                            for (int y = 0; y < 9; y++) {
+                                world.getBlockAt(3000 + x, 101 + y, 3000 + z).setType(Material.AIR);
+                            }
+                        }
                     }
+                    for (COCItem cocItem : manager.getManager(event.getPlayer()).COCItems) {
+                        manager.buildingManager.build(world, cocItem);
+                    }
+                } else if (args[1].equalsIgnoreCase("display")) {
+                    manager.scoreboardManager.addPlayerToDisplay(event.getPlayer());
                 }
             }
         } catch (Exception value) {
@@ -189,14 +226,19 @@ public class EventListener implements Listener {
     }// -60, 90, -420
 
     @EventHandler
+    public void join(PlayerJoinEvent event) {
+        manager.scoreboardManager.addPlayerToDisplay(event.getPlayer());
+    }
+
+    @EventHandler
     public void clickItemInventory(InventoryClickEvent event) {
-        if (manager.clickedInventoryItem(event.getClickedInventory(), event.getSlot(), event.getWhoClicked())) {
+        if (manager.inventoryManager.clickedInventoryItem(event.getClickedInventory(), event.getSlot(), event.getWhoClicked())) {
             event.setCancelled(true);
         }
     }
 
     @EventHandler
     public void closeInventory(InventoryCloseEvent event) {
-        manager.closeInventory(event.getInventory());
+        manager.inventoryManager.closeInventory(event.getInventory());
     }
 }

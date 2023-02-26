@@ -1,0 +1,39 @@
+[
+  {
+    "Gold": "0",
+    "Elixir": "0",
+    "DarkElixir": "0",
+    "items": [
+      {
+        "type": "nl.levy.COCPlugin.COCBuildings.Collector",
+        "level": "1",
+        "x": "1001",
+        "z": "1001"
+      },
+      {
+        "type": "nl.levy.COCPlugin.COCBuildings.GoldMine",
+        "level": "1",
+        "x": "1001",
+        "z": "1005"
+      },
+      {
+        "type": "nl.levy.COCPlugin.COCBuildings.ElixirTank",
+        "level": "1",
+        "x": "1005",
+        "z": "1001"
+      },
+      {
+        "type": "nl.levy.COCPlugin.COCBuildings.GoldStorage",
+        "level": "1",
+        "x": "1005",
+        "z": "1005"
+      },
+      {
+        "type": "nl.levy.COCPlugin.COCBuildings.TownHall",
+        "level": "1",
+        "x": "1001",
+        "z": "1009"
+      }
+    ]
+  }
+]

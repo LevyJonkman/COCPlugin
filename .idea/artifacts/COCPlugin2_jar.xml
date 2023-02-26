@@ -3,8 +3,9 @@
     <output-path>$PROJECT_DIR$/../COCServer/plugins</output-path>
     <root id="archive" name="COCPlugin2.jar">
       <element id="module-output" name="COCPlugin2" />
-      <element id="extracted-dir" path="$USER_HOME$/Downloads/spigot-api-1.19-R0.1-20220725.090125-47.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/Downloads/gson-2.10.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/gson-2.10.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/json-20220924.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/spigot-api-1.19-R0.1-20220725.090125-47.jar" path-in-jar="/" />
     </root>
   </artifact>
 </component>

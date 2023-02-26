@@ -7,7 +7,6 @@ import org.bukkit.entity.Player;
 
 public class BuildHelper {
     public static void clone(World world, COCLocation loc, COCLocation loc2, int size) {
-        System.out.println("Clone:" + loc.toString() + ", " + loc2.toString());
         for (int x = 0; x < size; x++) {
             for (int z = 0; z < size; z++) {
                 clone(world, new COCLocation(loc.x + x, loc.z + z), new COCLocation(loc2.x + x, loc2.z + z));
@@ -26,6 +25,7 @@ public class BuildHelper {
     }
 
     public static void clone(World world, int x1, int y1, int z1, int x2, int y2, int z2) {
+        if (world == null) return;
         world.getBlockAt(x2, y2, z2).setType(world.getBlockAt(x1, y1, z1).getType());
     }
 

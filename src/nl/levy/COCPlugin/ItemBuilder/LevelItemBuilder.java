@@ -11,6 +11,7 @@ public class LevelItemBuilder {
     public ElixirCollectorData elixirCollectorData;
     public GoldStorageData goldStorageData;
     public ElixirTankData elixirTankData;
+    public TownHallData townHallData;
 
     public static LevelItemBuilder create() {
         try {

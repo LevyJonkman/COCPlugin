@@ -2,6 +2,7 @@ package nl.levy.COCPlugin.COCManager;
 
 import nl.levy.COCPlugin.COC.OpenInventory;
 import nl.levy.COCPlugin.COCBuildings.COCItem;
+import nl.levy.COCPlugin.COCItems.COCMainManager;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -9,19 +10,20 @@ import org.bukkit.inventory.Inventory;
 import java.util.ArrayList;
 import java.util.List;
 
-public class InventoryManager extends BuildingManager{
-    public final Runnable runnable;
-    public final List<OpenInventory> openInventories;
+public class InventoryManager {
+    private final List<OpenInventory> openInventories;
+    private final COCMainManager cocMainManager;
 
-    public InventoryManager() {
+    public InventoryManager(COCMainManager cocMainManager) {
+        this.cocMainManager = cocMainManager;
         openInventories = new ArrayList<>();
-        runnable = () -> {
-            for (var inv: openInventories) {
-                inv.inventory.update();
-            }
-        };
     }
 
+    public void update() {
+        for (OpenInventory openInventory : openInventories) {
+            openInventory.inventory.update();
+        }
+    }
 
     public void OpenInventory(Player player, COCItem item) {
         var inv = item.createInventory();
@@ -59,7 +61,7 @@ public class InventoryManager extends BuildingManager{
 
 
         if (openInventory!=null) {
-            openInventory.inventory.clicked((COCManager) this, slot, player);
+            openInventory.inventory.clicked(cocMainManager.getManager(player), slot, player);
 
             return true;
         }

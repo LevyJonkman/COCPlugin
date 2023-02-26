@@ -176,5 +176,68 @@
         "count": 10000000
       }
     ]
+  },
+  "townHallData": {
+    "size": 4,
+    "goldStorageData": {
+      "storageData": [
+        {
+          "count": 10000
+        },
+        {
+          "count": 100000
+        },
+        {
+          "count": 1000000
+        },
+        {
+          "count": 1000000
+        },
+        {
+          "count": 10000000
+        }
+      ]
+    },
+    "elixirStorageData": {
+      "storageData": [
+        {
+          "count": 10000
+        },
+        {
+          "count": 100000
+        },
+        {
+          "count": 1000000
+        },
+        {
+          "count": 1000000
+        },
+        {
+          "count": 10000000
+        }
+      ]
+    },
+    "upgradeCosts": [
+      {
+        "elixir": 0,
+        "gold": 500
+      },
+      {
+        "elixir": 0,
+        "gold": 1000
+      },
+      {
+        "elixir": 0,
+        "gold": 5000
+      },
+      {
+        "elixir": 0,
+        "gold": 25000
+      },
+      {
+        "elixir": 0,
+        "gold": 100000
+      }
+    ]
   }
 }

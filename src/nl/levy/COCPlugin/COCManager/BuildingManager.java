@@ -9,25 +9,30 @@ import org.bukkit.World;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BuildingManager extends BaseManager {
+public class BuildingManager {
 
     public List<List<ItemBuilder>> collectors;
     public List<List<ItemBuilder>> goldMines;
     public List<List<ItemBuilder>> goldStorages;
     public List<List<ItemBuilder>> elixirTanks;
+    public List<List<ItemBuilder>> townHalls;
+
+    private int counter = 0;
 
     public BuildingManager() {
-        collectors = createSelect(5, 3, 0, 3);
-        goldMines = createSelect(5, 3, 3, 3);
-        goldStorages = createSelect(5, 3, 6, 3);
-        elixirTanks = createSelect(5, 3, 9, 3);
+        collectors = createSelect(5, 3, 3);
+        goldMines = createSelect(5, 3, 3);
+        goldStorages = createSelect(5, 3, 3);
+        elixirTanks = createSelect(5, 3, 3);
+        townHalls = createSelect(1, 4, 1);
     }
 
-    private List<List<ItemBuilder>> createSelect(int levels, int size, int z, int stages) {
+    private List<List<ItemBuilder>> createSelect(int levels, int size, int stages) {
         var list = new ArrayList<List<ItemBuilder>>();
         for (int i = 0; i < levels; i++) {
-            list.add(fromStaging(i + 1, size, i * size, z, stages));
+            list.add(fromStaging(i + 1, size, i * size, counter, stages));
         }
+        counter += size;
         return list;
     }
 
@@ -40,40 +45,22 @@ public class BuildingManager extends BaseManager {
     }
 
     public void build(World world, COCItem item2) {
-        System.out.println("Build:" + item2);
         if (item2 instanceof Collector item) {
-            buildItem(world, item);
+            buildItem(world, item, collectors);
         } else if (item2 instanceof GoldMine item) {
-            buildItem(world, item);
+            buildItem(world, item, goldMines);
         } else if (item2 instanceof GoldStorage item) {
-            buildItem(world, item);
+            buildItem(world, item, goldStorages);
         } else if (item2 instanceof ElixirTank item) {
-            buildItem(world, item);
+            buildItem(world, item, elixirTanks);
+        } else if (item2 instanceof TownHall item) {
+            buildItem(world, item, townHalls);
         }
     }
 
-    private void buildItem(World world, Collector item) {
-        buildItem(world, item, collectors);
-    }
-
-    private void buildItem(World world, GoldMine item) {
-        buildItem(world, item, goldMines);
-    }
-
-    private void buildItem(World world, GoldStorage item) {
-        buildItem(world, item, goldStorages);
-    }
-
-    private void buildItem(World world, ElixirTank item) {
-        buildItem(world, item, elixirTanks);
-    }
-
     private void buildItem(World world, COCLevelItem item, List<List<ItemBuilder>> collection) {
-        buildItem(world, collection.get(item.level - 1).get(item.getStaging() - 1), item.location);
-    }
-
-    private void buildItem(World world, ItemBuilder item, COCLocation location) {
-        BuildHelper.clone(world, item.location, location, item.size);
+        var newItem = collection.get(item.level - 1).get(item.getStaging() - 1);
+        BuildHelper.clone(world, newItem.location, item.location, newItem.size);
     }
 }
 
