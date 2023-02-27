@@ -29,12 +29,12 @@ public class BuildHelper {
         world.getBlockAt(x2, y2, z2).setType(world.getBlockAt(x1, y1, z1).getType());
     }
 
-    public static void GenerateBase(Player player, int startX, int startY, int width, int height) {
+    public static void GenerateBase(World w, int startX, int startY, int width, int height) {
         boolean dark = true;
         for (int i = startX; i < width; i++) {
             for (int j = startY; j < height; j++) {
                 dark = !dark;
-                FillBlock(player.getWorld(), i * 3, j * 3, dark ? Material.GREEN_CONCRETE : Material.LIME_CONCRETE);
+                FillBlock(w, i * 3, j * 3, dark ? Material.GREEN_CONCRETE : Material.LIME_CONCRETE);
             }
             dark = !dark;
         }

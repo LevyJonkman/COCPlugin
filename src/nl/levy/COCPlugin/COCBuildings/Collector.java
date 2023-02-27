@@ -11,20 +11,21 @@ import java.util.List;
 
 public class Collector extends COCLevelItem {
 
-    private final List<ResourceProductionLevel> productionLevels;
-    public Collector(int x, int y, LevelItemBuilder builder) {
-        super(x, y, builder.elixirCollectorData);
+    public Collector(int x, int y) {
+        super(x, y, LevelItemBuilder.getInstance().elixirCollectorData);
 
-        this.productionLevels = builder.elixirCollectorData.productionLevels;
+        components.add(new ResourceGeneratorComponent(getProductionLevel(), ResourceType.Elixir));
+    }
 
-        components.add(new ResourceGeneratorComponent(productionLevels.get(0), ResourceType.Elixir));
+    private ResourceProductionLevel getProductionLevel() {
+        return LevelItemBuilder.getInstance().elixirCollectorData.productionLevels.get(level-1);
     }
 
     @Override
     public void upgrade() {
         super.upgrade();
 
-        getResourceGeneratorComponent().upgradeLevel(productionLevels.get(level-1));
+        getResourceGeneratorComponent().upgradeLevel(getProductionLevel());
     }
 
     public ResourceGeneratorComponent getResourceGeneratorComponent() {

@@ -11,13 +11,14 @@ import nl.levy.COCPlugin.ItemBuilder.LevelItemBuilder;
 import java.util.List;
 
 public class ElixirTank extends COCLevelItem {
-    private final List<StorageValues> storageData;
+    public ElixirTank(int x, int y, COCManager manager) {
+        super(x, y, LevelItemBuilder.getInstance().elixirTankData);
 
-    public ElixirTank(int x, int y, LevelItemBuilder data, COCManager manager) {
-        super(x, y, data.elixirTankData);
-        storageData = data.goldStorageData.storageData;
+        components.add(new ResourceStorageComponent(ResourceType.Elixir, getStorageValues(), manager.resourceManger));
+    }
 
-        components.add(new ResourceStorageComponent(ResourceType.Elixir, data.elixirTankData.storageData.get(0), manager.resourceManger));
+    private StorageValues getStorageValues() {
+        return LevelItemBuilder.getInstance().elixirTankData.storageData.get(level-1);
     }
 
     @Override
@@ -33,7 +34,7 @@ public class ElixirTank extends COCLevelItem {
     public void upgrade() {
         super.upgrade();
 
-        getResourceStorageComponent().upgradeLevel(storageData.get(level-1));
+        getResourceStorageComponent().upgradeLevel(getStorageValues());
     }
 
     @Override

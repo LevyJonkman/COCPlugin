@@ -1,5 +1,6 @@
 package nl.levy.COCPlugin.COCBuildings;
 
+import nl.levy.COCPlugin.COC.COCAttack;
 import nl.levy.COCPlugin.ItemBuilder.BaseLevelData;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -10,6 +11,6 @@ public abstract class COCDefenceItem extends COCLevelItem{
         super(x, y, data);
     }
 
-    public abstract void defenseUpdate();
+    public abstract void defenseUpdate(COCAttack item);
 
 }

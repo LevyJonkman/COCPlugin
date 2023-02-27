@@ -4,6 +4,7 @@ import nl.levy.COCPlugin.COCBuildings.COCLevelItem;
 import nl.levy.COCPlugin.COCItems.COCMainManager;
 import nl.levy.COCPlugin.COCItems.ResourceType;
 import nl.levy.COCPlugin.Components.ResourceStorageComponent;
+import nl.levy.COCPlugin.Save.SaveCOCManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,7 +17,7 @@ public class ResourceManger {
     private final COCManager manager;
     public final HashMap<ResourceType, Integer> currentValues;
 
-    ResourceManger(COCManager manager, COCMainManager.SaveManager data) {
+    ResourceManger(COCManager manager, SaveCOCManager data) {
         this.manager = manager;
         currentValues = new HashMap<>();
         currentValues.put(ResourceType.Gold, data.Gold);

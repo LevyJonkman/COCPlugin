@@ -2,49 +2,76 @@ package nl.levy.COCPlugin.COCManager;
 
 import nl.levy.COCPlugin.COCBuildings.*;
 import nl.levy.COCPlugin.COCItems.COCLocation;
-import nl.levy.COCPlugin.COCItems.COCMainManager;
 import nl.levy.COCPlugin.COCItems.ResourceCollection;
 import nl.levy.COCPlugin.COCItems.ResourceType;
-import nl.levy.COCPlugin.ItemBuilder.LevelItemBuilder;
+import nl.levy.COCPlugin.Save.RedisClient;
+import nl.levy.COCPlugin.Save.SaveCOCItem;
+import nl.levy.COCPlugin.Save.SaveCOCManager;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class COCManager {
     public final ResourceManger resourceManger;
     public final List<COCItem> COCItems;
-    private final LevelItemBuilder levelItemBuilder;
+    public final UUID mcPlayerUUID;
 
+    public void Save() {
+        new RedisClient().save(mcPlayerUUID, this);
+    }
 
-    public COCManager(LevelItemBuilder levelItemBuilder) {
+    public COCManager(UUID mcPlayerUUID) {
+        this.mcPlayerUUID = mcPlayerUUID;
         resourceManger = new ResourceManger(this);
-        this.levelItemBuilder = levelItemBuilder;
         COCItems = new ArrayList<>();
     }
 
-    public COCManager(LevelItemBuilder levelItemBuilder, COCMainManager.SaveManager data) {
+    public COCManager(SaveCOCManager data, UUID mcPlayerUUID) {
+        this.mcPlayerUUID = mcPlayerUUID;
         resourceManger = new ResourceManger(this, data);
-        this.levelItemBuilder = levelItemBuilder;
         COCItems = new ArrayList<>();
 
-        for (COCMainManager.SaveItem item : data.items) {
+
+        for (SaveCOCItem item : data.items) {
             switch (item.type) {
                 case "nl.levy.COCPlugin.COCBuildings.Collector" -> {
-                    var coll = createCollector(item.x, item.z);
+                    var coll = new Collector(item.x, item.z);
                     coll.level = item.level;
                     coll.getResourceGeneratorComponent().storedResources = item.extra;
+                    COCItems.add(coll);
                 }
                 case "nl.levy.COCPlugin.COCBuildings.GoldMine" -> {
-                    var coll = createGoldMine(item.x, item.z);
+                    var coll = new GoldMine(item.x, item.z);
                     coll.level = item.level;
                     coll.getResourceGeneratorComponent().storedResources = item.extra;
                 }
-                case "nl.levy.COCPlugin.COCBuildings.ElixirTank" -> createElixirTank(item.x, item.z).level = item.level;
-                case "nl.levy.COCPlugin.COCBuildings.GoldStorage" -> createGoldStorage(item.x, item.z).level = item.level;
-                case "nl.levy.COCPlugin.COCBuildings.TownHall" -> createTownHall(item.x, item.z).level = item.level;
+                case "nl.levy.COCPlugin.COCBuildings.ElixirTank" -> {
+                    var tank = new ElixirTank(item.x, item.z, this);
+                    tank.level = item.level;
+                    COCItems.add(tank);
+                }
+                case "nl.levy.COCPlugin.COCBuildings.GoldStorage" -> {
+                    var tank = new GoldStorage(item.x, item.z, this);
+                    tank.level = item.level;
+                    COCItems.add(tank);
+                }
+                case "nl.levy.COCPlugin.COCBuildings.TownHall" -> {
+                    TownHall item2 = new TownHall(item.x, item.z, this);
+                    item2.level = item.level;
+                    COCItems.add(item2);
+                }
+                case "nl.levy.COCPlugin.COCBuildings.ArcherTower" -> {
+                    ArcherTower item2 = new ArcherTower(item.x, item.z);
+                    item2.level = item.level;
+                    COCItems.add(item2);
+                }
             }
         }
     }
+
+
+    ///resources
 
     public boolean hasResources(ResourceCollection nextLevelPrice) {
         return resourceManger.has(ResourceType.Gold, nextLevelPrice.gold) && resourceManger.has(ResourceType.Elixir, nextLevelPrice.elixir) && resourceManger.has(ResourceType.DarkElixir, nextLevelPrice.darkElixir);
@@ -54,13 +81,19 @@ public class COCManager {
         resourceManger.remove(ResourceType.Gold, nextLevelPrice.gold);
         resourceManger.remove(ResourceType.Elixir, nextLevelPrice.elixir);
         resourceManger.remove(ResourceType.DarkElixir, nextLevelPrice.darkElixir);
+
+        Save();
     }
 
     public void addResource(ResourceCollection col) {
         resourceManger.add(ResourceType.Gold, col.gold);
         resourceManger.add(ResourceType.Elixir, col.elixir);
         resourceManger.add(ResourceType.DarkElixir, col.darkElixir);
+
+        Save();
     }
+
+    ////items locations mc
 
     public COCItem getItem(int playerX, int playerZ) {
         for (COCItem cocItem : COCItems) {
@@ -100,48 +133,66 @@ public class COCManager {
         return false;
     }
 
+    //create coc items
+
+
     public Collector createCollector(int x, int y) {
-        Collector item = new Collector(x, y, levelItemBuilder);
+        Collector item = new Collector(x, y);
         COCItems.add(item);
 
+        Save();
         return item;
     }
 
     public GoldMine createGoldMine(int i, int i1) {
-        GoldMine item = new GoldMine(i, i1, levelItemBuilder);
+        GoldMine item = new GoldMine(i, i1);
         COCItems.add(item);
 
+        Save();
         return item;
     }
 
     public GoldStorage createGoldStorage(int i, int i1) {
-        GoldStorage item = new GoldStorage(i, i1, levelItemBuilder, this);
+        GoldStorage item = new GoldStorage(i, i1, this);
         COCItems.add(item);
 
+        Save();
         return item;
     }
 
     public ElixirTank createElixirTank(int i, int i1) {
-        ElixirTank item = new ElixirTank(i, i1, levelItemBuilder, this);
+        ElixirTank item = new ElixirTank(i, i1, this);
         COCItems.add(item);
 
+        Save();
         return item;
     }
 
     public TownHall createTownHall(int i, int i1) {
-        TownHall item = new TownHall(i, i1, levelItemBuilder, this);
+        TownHall item = new TownHall(i, i1, this);
         COCItems.add(item);
 
+        Save();
         return item;
     }
+
+    ///attack logic
 
     public void updateDefences() {
         System.out.println(1);
         for (COCItem cocItem : COCItems) {
             System.out.println(cocItem);
             if (cocItem instanceof COCDefenceItem item) {
-                item.defenseUpdate();
+                item.defenseUpdate(null);
             }
         }
+    }
+
+    public ArcherTower createArcherTower(int i, int i1) {
+        System.out.println("create");
+        ArcherTower tower = new ArcherTower(i, i1);
+        System.out.println("done create");
+        COCItems.add(tower);
+        return tower;
     }
 }

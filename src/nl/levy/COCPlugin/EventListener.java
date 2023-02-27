@@ -7,10 +7,12 @@ import nl.levy.COCPlugin.COCBuildings.COCItem;
 import nl.levy.COCPlugin.COCEntity.Entity;
 import nl.levy.COCPlugin.COCItems.ArcherTowerDamage;
 import nl.levy.COCPlugin.COCItems.COCMainManager;
+import nl.levy.COCPlugin.COCManager.BuildingManager;
 import nl.levy.COCPlugin.ItemBuilder.ArcherTowerData;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -72,12 +74,13 @@ public class EventListener implements Listener {
     @EventHandler
     public void looking(PlayerMoveEvent event) {
         disable();
-
+        System.out.println(1);
         if (event.getPlayer().getLocation().getBlockX() < 500 && event.getPlayer().getLocation().getBlockZ() < 500)
             return;
-
+        System.out.println(2);
         var target = event.getPlayer().getTargetBlockExact(100);
         if (target != null && target.getLocation().getBlockY() == 100 && (target.getType() == Material.GREEN_CONCRETE || target.getType() == Material.LIME_CONCRETE)) {
+            System.out.println(3);
             var loc = target.getLocation();
             var start = new Location(loc.getWorld(), (int) (loc.getBlockX() / 3.0) * 3, 100, (int) (loc.getBlockZ() / 3.0) * 3);
 
@@ -92,11 +95,41 @@ public class EventListener implements Listener {
             }
         }
     }
+
+    private COCAttack attack;
+
     @EventHandler
     public void data(PlayerChatEvent e) {
         if (e.getMessage().equalsIgnoreCase("zombie")) {
-            getTower(e.getPlayer());
-            getAttack(e.getPlayer()).spawnZombie(e.getPlayer().getLocation());
+            attack = new COCAttack(manager.getManager(e.getPlayer()));
+            //getTower(e.getPlayer());
+            //getAttack(e.getPlayer()).spawnZombie(e.getPlayer().getLocation());
+
+
+
+        } else if (e.getMessage().equalsIgnoreCase("spawn")) {
+
+            attack.spawnZombie(e.getPlayer().getLocation());
+            
+
+        } else if (e.getMessage().equalsIgnoreCase("build")) {
+            cleanbase(e.getPlayer().getWorld());
+            BuildHelper.GenerateBase(e.getPlayer().getWorld(), 1000, 1000, 1010, 1010);
+            for (COCItem cocItem : manager.getManager(e.getPlayer()).COCItems) {
+                BuildingManager.getInstance().build(e.getPlayer().getWorld(), cocItem);
+            }
+        } else if (e.getMessage().equalsIgnoreCase("clean")) {
+            cleanbase(e.getPlayer().getWorld());
+        }
+    }
+
+    private void cleanbase(World w) {
+        for (int x = 0; x < 10*3; x++) {
+            for (int y = 0; y <10*3; y++) {
+                for (int z = 0; z < 10 * 3; z++) {
+                    w.getBlockAt(3000 + x, 101 + y, 3000 + z).setType(Material.AIR);
+                }
+            }
         }
     }
 
@@ -127,30 +160,29 @@ public class EventListener implements Listener {
 //        }
 //    }
 
-    private List<Entity> zombies = new ArrayList<>();
-    private ArcherTower tower;
-    private COCAttack attack;
+//    private List<Entity> zombies = new ArrayList<>();
+//    private ArcherTower tower;
+//    private COCAttack attack;
 
-    private COCAttack getAttack(Player player) {
-        if (attack == null) {
-            attack = new COCAttack(manager, player, player);
-        }
-        return attack;
-    }
-
-    private ArcherTower getTower(Player player) {
-        if (tower == null) {
-
-            var list = new ArrayList<ArcherTowerDamage>();
-            list.add(new ArcherTowerDamage(1, 1));
-
-
-
-            tower = new ArcherTower(1, 1, new ArcherTowerData(3, new ArrayList<>(), 10, list), getAttack(player));
-            manager.getManager(player).COCItems.add(tower);
-        }
-        return tower;
-    }
+//    private COCAttack getAttack(Player player) {
+//        if (attack == null) {
+//            attack = new COCAttack(manager, player, player);
+//        }
+//        return attack;
+//    }
+//
+//    private ArcherTower getTower(Player player) {
+//        if (tower == null) {
+//
+//            var list = new ArrayList<ArcherTowerDamage>();
+//            list.add(new ArcherTowerDamage(1, 1));
+//
+//
+//            tower = new ArcherTower(1, 1);
+//            manager.getManager(player).COCItems.add(tower);
+//        }
+//        return tower;
+//    }
 
     @EventHandler
     public void asdf2(PlayerItemHeldEvent event) {
@@ -206,17 +238,19 @@ public class EventListener implements Listener {
 
             var world = location.getWorld();
 
+            var buildingManager = BuildingManager.getInstance();
+
             switch (item.getType()) {
                 case PURPLE_DYE ->
-                        manager.buildingManager.build(world, manager.getManager(event.getPlayer()).createCollector(x, z));
+                        buildingManager.build(world, manager.getManager(event.getPlayer()).createCollector(x, z));
                 case YELLOW_DYE ->
-                        manager.buildingManager.build(world, manager.getManager(event.getPlayer()).createGoldMine(x, z));
+                        buildingManager.build(world, manager.getManager(event.getPlayer()).createGoldMine(x, z));
                 case PURPLE_WOOL ->
-                        manager.buildingManager.build(world, manager.getManager(event.getPlayer()).createElixirTank(x, z));
+                        buildingManager.build(world, manager.getManager(event.getPlayer()).createElixirTank(x, z));
                 case YELLOW_WOOL ->
-                        manager.buildingManager.build(world, manager.getManager(event.getPlayer()).createGoldStorage(x, z));
+                        buildingManager.build(world, manager.getManager(event.getPlayer()).createGoldStorage(x, z));
                 case HAY_BLOCK ->
-                        manager.buildingManager.build(world, manager.getManager(event.getPlayer()).createTownHall(x, z));
+                        buildingManager.build(world, manager.getManager(event.getPlayer()).createTownHall(x, z));
             }
         }
     }
@@ -224,6 +258,7 @@ public class EventListener implements Listener {
     @SuppressWarnings("deprecation")
     @EventHandler
     public void chatEvent(PlayerChatEvent event) {
+        var buildingManager = BuildingManager.getInstance();
         try {
             String[] args = event.getMessage().split(" ");
             if (args[0].equalsIgnoreCase("coc")) {
@@ -237,27 +272,31 @@ public class EventListener implements Listener {
 
                     switch (args[2]) {
                         case "collector" -> {
-                            manager.buildingManager.build(world, manager.getManager(event.getPlayer()).createCollector(1000 + Integer.parseInt(args[3]), 1000 + Integer.parseInt(args[4])));
+                            buildingManager.build(world, manager.getManager(event.getPlayer()).createCollector(1000 + Integer.parseInt(args[3]), 1000 + Integer.parseInt(args[4])));
                         }
                         case "goldmine" -> {
-                            manager.buildingManager.build(world, manager.getManager(event.getPlayer()).createGoldMine(1000 + Integer.parseInt(args[3]), 1000 + Integer.parseInt(args[4])));
+                            buildingManager.build(world, manager.getManager(event.getPlayer()).createGoldMine(1000 + Integer.parseInt(args[3]), 1000 + Integer.parseInt(args[4])));
                         }
                         case "goldstorage" -> {
-                            manager.buildingManager.build(world, manager.getManager(event.getPlayer()).createGoldStorage(1000 + Integer.parseInt(args[3]), 1000 + Integer.parseInt(args[4])));
+                            buildingManager.build(world, manager.getManager(event.getPlayer()).createGoldStorage(1000 + Integer.parseInt(args[3]), 1000 + Integer.parseInt(args[4])));
                         }
                         case "elixirtank" -> {
-                            manager.buildingManager.build(world, manager.getManager(event.getPlayer()).createElixirTank(1000 + Integer.parseInt(args[3]), 1000 + Integer.parseInt(args[4])));
+                            buildingManager.build(world, manager.getManager(event.getPlayer()).createElixirTank(1000 + Integer.parseInt(args[3]), 1000 + Integer.parseInt(args[4])));
+                        }
+                        case "archertower" -> {
+                            System.out.println("archertower");
+                            buildingManager.build(world, manager.getManager(event.getPlayer()).createArcherTower(1000 + Integer.parseInt(args[3]), 1000 + Integer.parseInt(args[4])));
                         }
                     }
                 } else if (args[1].equalsIgnoreCase("generatebase")) {
-                    BuildHelper.GenerateBase(event.getPlayer(), Integer.parseInt(args[2]), Integer.parseInt(args[3]),
+                    BuildHelper.GenerateBase(event.getPlayer().getWorld(), Integer.parseInt(args[2]), Integer.parseInt(args[3]),
                             Integer.parseInt(args[4]), Integer.parseInt(args[5]));
                 } else if (args[1].equalsIgnoreCase("generateplayer")) {
-                    BuildHelper.GenerateBase(event.getPlayer(), 1000 + Integer.parseInt(args[2]), 1000 + Integer.parseInt(args[3]),
+                    BuildHelper.GenerateBase(event.getPlayer().getWorld(), 1000 + Integer.parseInt(args[2]), 1000 + Integer.parseInt(args[3]),
                             1000 + Integer.parseInt(args[4]), 1000 + Integer.parseInt(args[5]));
                 } else if (args[1].equalsIgnoreCase("data")) {
                     if (manager.getManager(event.getPlayer()).COCItems.size() == 0) {
-                        manager.buildingManager.build(world, manager.getManager(event.getPlayer()).createCollector(1000, 1000));
+                        buildingManager.build(world, manager.getManager(event.getPlayer()).createCollector(1000, 1000));
                     }
 
                     var item = manager.getManager(event.getPlayer()).getItem(event.getPlayer().getLocation().getBlockX(), event.getPlayer().getLocation().getBlockZ());
@@ -274,7 +313,7 @@ public class EventListener implements Listener {
                         }
                     }
                     for (COCItem cocItem : manager.getManager(event.getPlayer()).COCItems) {
-                        manager.buildingManager.build(world, cocItem);
+                        buildingManager.build(world, cocItem);
                     }
                 } else if (args[1].equalsIgnoreCase("display")) {
                     manager.scoreboardManager.addPlayerToDisplay(event.getPlayer());

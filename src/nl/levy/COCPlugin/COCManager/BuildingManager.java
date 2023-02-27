@@ -11,20 +11,32 @@ import java.util.List;
 
 public class BuildingManager {
 
+    private static BuildingManager buildingManager;
+
+    public static BuildingManager getInstance() {
+        if (buildingManager == null) {
+            buildingManager = new BuildingManager();
+        }
+
+        return buildingManager;
+    }
+
     public List<List<ItemBuilder>> collectors;
     public List<List<ItemBuilder>> goldMines;
     public List<List<ItemBuilder>> goldStorages;
     public List<List<ItemBuilder>> elixirTanks;
     public List<List<ItemBuilder>> townHalls;
+    public List<List<ItemBuilder>> archerTowers;
 
     private int counter = 0;
 
-    public BuildingManager() {
+    private BuildingManager() {
         collectors = createSelect(5, 3, 3);
         goldMines = createSelect(5, 3, 3);
         goldStorages = createSelect(5, 3, 3);
         elixirTanks = createSelect(5, 3, 3);
         townHalls = createSelect(1, 4, 1);
+        archerTowers = createSelect(1, 3, 1);
     }
 
     private List<List<ItemBuilder>> createSelect(int levels, int size, int stages) {
@@ -55,6 +67,8 @@ public class BuildingManager {
             buildItem(world, item, elixirTanks);
         } else if (item2 instanceof TownHall item) {
             buildItem(world, item, townHalls);
+        } else if (item2 instanceof ArcherTower item) {
+            buildItem(world, item, archerTowers);
         }
     }
 

@@ -7,6 +7,7 @@ import nl.levy.COCPlugin.COCItems.ArcherTowerDamage;
 import nl.levy.COCPlugin.COCManager.COCManager;
 import nl.levy.COCPlugin.Inventories.COCInventory;
 import nl.levy.COCPlugin.ItemBuilder.ArcherTowerData;
+import nl.levy.COCPlugin.ItemBuilder.LevelItemBuilder;
 import nl.levy.COCPlugin.MainPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -21,20 +22,15 @@ import java.util.Date;
 
 public class ArcherTower extends COCDefenceItem {
 
-    private final ArrayList<ArcherTowerDamage> archerTowerData;
-
     private Date lastShot;
-    private COCAttack attack;
 
-    public ArcherTower(int x, int y, ArcherTowerData data, COCAttack attack) {
-        super(x, y, data);
-        this.attack = attack;
-        archerTowerData = data.damageValues;
+    public ArcherTower(int x, int y) {
+        super(x, y, LevelItemBuilder.getInstance().archerTowerData);
         lastShot = new Date();
     }
 
     private ArcherTowerDamage getData() {
-        return archerTowerData.get(level - 1);
+        return LevelItemBuilder.getInstance().archerTowerData.damageValues.get(level - 1);
     }
 
     @Override
@@ -49,10 +45,10 @@ public class ArcherTower extends COCDefenceItem {
 
 
     @Override
-    public void defenseUpdate() {
+    public void defenseUpdate(COCAttack attack) {
         var data = getData();
         if (lastShot.getTime() + data.fireRate * 1000L < new Date().getTime()) {
-            Entity zombie = getNearest();
+            Entity zombie = getNearest(attack);
             if (zombie == null) {
                 return;
             }
@@ -72,7 +68,7 @@ public class ArcherTower extends COCDefenceItem {
 
     }
 
-    private Entity getNearest() {
+    private Entity getNearest(COCAttack attack) {
         var dist = Double.MAX_VALUE;
         Entity near = null;
         for (Entity entity : attack.entities) {

@@ -9,5 +9,6 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="gson-2.10" level="project" />
     <orderEntry type="library" name="spigot-api-1.19-R0.1-20220725.090125-47" level="project" />
+    <orderEntry type="library" name="jedis-4.4.0-m2" level="project" />
   </component>
 </module>

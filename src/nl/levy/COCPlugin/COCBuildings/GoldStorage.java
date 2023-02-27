@@ -11,13 +11,14 @@ import nl.levy.COCPlugin.ItemBuilder.LevelItemBuilder;
 import java.util.List;
 
 public class GoldStorage extends COCLevelItem {
-    private final List<StorageValues> storageData;
+    public GoldStorage(int x, int y, COCManager manager) {
+        super(x, y, LevelItemBuilder.getInstance().goldStorageData);
 
-    public GoldStorage(int x, int y, LevelItemBuilder data, COCManager manager) {
-        super(x, y, data.goldStorageData);
-        storageData = data.goldStorageData.storageData;
+        components.add(new ResourceStorageComponent(ResourceType.Gold, getStorageValues(), manager.resourceManger));
+    }
 
-        components.add(new ResourceStorageComponent(ResourceType.Gold, storageData.get(0), manager.resourceManger));
+    private StorageValues getStorageValues() {
+        return LevelItemBuilder.getInstance().goldStorageData.storageData.get(level-1);
     }
 
     @Override
@@ -33,7 +34,7 @@ public class GoldStorage extends COCLevelItem {
     public void upgrade() {
         super.upgrade();
 
-        getResourceStorageComponent().upgradeLevel(storageData.get(level-1));
+        getResourceStorageComponent().upgradeLevel(getStorageValues());
     }
 
     @Override

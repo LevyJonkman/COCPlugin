@@ -12,15 +12,24 @@ public class LevelItemBuilder {
     public GoldStorageData goldStorageData;
     public ElixirTankData elixirTankData;
     public TownHallData townHallData;
+    public ArcherTowerData archerTowerData;
 
-    public static LevelItemBuilder create() {
-        try {
-            String json = Files.readString(Path.of("C:\\Users\\l.jonkman\\prive\\repos\\COCServer\\objectdata.json"));
+    private static LevelItemBuilder levelItemBuilder;
 
-            return new Gson().fromJson(json, LevelItemBuilder.class);
+    public static LevelItemBuilder getInstance() {
+        if (levelItemBuilder == null) {
+            try {
+                String json = Files.readString(Path.of("C:\\Users\\l.jonkman\\prive\\repos\\COCServer\\objectdata.json"));
 
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+                levelItemBuilder = new Gson().fromJson(json, LevelItemBuilder.class);
+                System.out.println(new Gson().toJson(levelItemBuilder));
+
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
+
+        return levelItemBuilder;
     }
+
 }

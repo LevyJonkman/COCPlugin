@@ -10,14 +10,16 @@ import nl.levy.COCPlugin.ItemBuilder.LevelItemBuilder;
 import java.util.List;
 
 public class GoldMine extends COCLevelItem {
-    private final List<ResourceProductionLevel> productionLevels;
 
-    public GoldMine(int x, int y, LevelItemBuilder builder) {
-        super(x, y, builder.goldMineData);
+    public GoldMine(int x, int y) {
+        super(x, y, LevelItemBuilder.getInstance().goldMineData);
 
-        this.productionLevels = builder.goldMineData.productionLevels;
+        components.add(new ResourceGeneratorComponent(getProductionLevel(), ResourceType.Gold));
+    }
 
-        components.add(new ResourceGeneratorComponent(productionLevels.get(0), ResourceType.Gold));
+
+    private ResourceProductionLevel getProductionLevel() {
+        return LevelItemBuilder.getInstance().goldMineData.productionLevels.get(level-1);
     }
 
     @Override
@@ -29,7 +31,7 @@ public class GoldMine extends COCLevelItem {
     public void upgrade() {
         super.upgrade();
 
-        getResourceGeneratorComponent().upgradeLevel(productionLevels.get(level-1));
+        getResourceGeneratorComponent().upgradeLevel(getProductionLevel());
     }
 
     public ResourceGeneratorComponent getResourceGeneratorComponent() {

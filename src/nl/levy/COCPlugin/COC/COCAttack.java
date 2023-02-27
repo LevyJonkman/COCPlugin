@@ -12,22 +12,20 @@ import java.util.List;
 
 public class COCAttack {
 
-    private final COCManager attacker;
     private final COCManager defender;
 
     public final List<Entity> entities = new ArrayList<>();
 
-    public COCAttack(COCMainManager cocMainManager, Player player1, Player player2) {
-        attacker = cocMainManager.getManager(player1);
-        defender = cocMainManager.getManager(player2);
+    public COCAttack(COCManager defender) {
+        this.defender = defender;
 
 
-        MainPlugin.plugin.getServer().getScheduler().scheduleSyncRepeatingTask(MainPlugin.plugin, () -> {
+        /*MainPlugin.plugin.getServer().getScheduler().scheduleSyncRepeatingTask(MainPlugin.plugin, () -> {
             for (Entity entity : entities) {
                 entity.update();
             }
             defender.updateDefences();
-        }, 1, 1);
+        }, 1, 1);*/
     }
 
     public void spawnZombie(Location location) {
